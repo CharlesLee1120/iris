@@ -6,6 +6,57 @@ This folder provides easy to understand code snippets on how to get started with
 
 It doesn't always contain the "best ways" but it does cover each important feature that will make you so excited to GO with iris!
 
+## Running the examples
+
+1. Install the Go Programming Language, version 1.9+ from [here](https://golang.org/dl).
+2. Install Iris: `go get -u github.com/kataras/iris`
+3. Install any external packages that required by the examples
+
+<details>
+<summary>External packages</summary>
+
+```bash
+cd _examples && go get ./...
+# or
+go get github.com/iris-contrib/middleware/...
+go get github.com/betacraft/yaag/irisyaag
+go get github.com/markbates/goth/...
+go get github.com/getsentry/raven-go/...
+go get github.com/casbin/casbin
+go get github.com/markbates/goth/...
+go get github.com/aws/aws-sdk-go/...
+go get github.com/getsentry/raven-go/...
+go get github.com/casbin/casbin
+go get github.com/aws/aws-sdk-go/...
+go get github.com/prometheus/client_golang/...
+go get github.com/didip/tollbooth
+go get github.com/valyala/quicktemplate
+go get github.com/shiyanhui/hero
+go get github.com/go-xorm/xorm
+go get github.com/nfnt/resize
+go get github.com/prometheus/client_golang/...
+go get github.com/didip/tollbooth
+go get github.com/valyala/quicktemplate
+go get github.com/shiyanhui/hero
+go get github.com/go-xorm/xorm
+go get github.com/nfnt/resize
+go get github.com/dgrijalva/jwt-go
+go get github.com/newrelic/go-agent
+go get github.com/valyala/tcplisten
+go get github.com/kataras/bindata/cmd/bindata
+```
+
+</details>
+
+And execute
+
+```sh
+$ cd $GOPATH/src/github.com/kataras/iris/_examples/overview
+$ go run main.go
+```
+
+> Test the examples by opening a terminal window and execute: `GOCACHE=off && cd _examples && go test -v ./...`
+
 ### Overview
 
 - [Hello world!](hello-world/main.go)
@@ -20,6 +71,7 @@ It doesn't always contain the "best ways" but it does cover each important featu
 - [Tutorial: DropzoneJS Uploader](tutorial/dropzonejs)
 - [Tutorial: Caddy](tutorial/caddy)
 - [Tutorial:Iris Go Framework + MongoDB](https://medium.com/go-language/iris-go-framework-mongodb-552e349eab9c)
+- [Tutorial: API for Apache Kafka](tutorial/api-for-apache-kafka) **NEW**
 
 ### Structuring
 
@@ -325,6 +377,7 @@ You can serve [quicktemplate](https://github.com/valyala/quicktemplate) and [her
 ### How to Read from `context.Request() *http.Request`
 
 - [Read JSON](http_request/read-json/main.go)
+    * [Struct Validation](http_request/read-json-struct-validation/main.go)
 - [Read XML](http_request/read-xml/main.go)
 - [Read Form](http_request/read-form/main.go)
 - [Read Custom per type](http_request/read-custom-per-type/main.go)
@@ -342,7 +395,8 @@ You can serve [quicktemplate](https://github.com/valyala/quicktemplate) and [her
 - [Write Gzip](http_responsewriter/write-gzip/main.go)
 - [Stream Writer](http_responsewriter/stream-writer/main.go)
 - [Transactions](http_responsewriter/transactions/main.go)
-- [SSE (third-party package usage for server-side events)](http_responsewriter/sse-third-party/main.go)
+- [SSE](http_responsewriter/sse/main.go) **NEW**
+- [SSE (third-party package usage for server sent events)](http_responsewriter/sse-third-party/main.go)
 
 > The `context/context#ResponseWriter()` returns an enchament version of a http.ResponseWriter, these examples show some places where the Context uses this object. Besides that you can use it as you did before iris.
 

@@ -21,6 +21,7 @@
 - [教程: DropzoneJS 上传](tutorial/dropzonejs)
 - [教程: Caddy 服务器使用](tutorial/caddy)
 - [教程: Iris + MongoDB](https://medium.com/go-language/iris-go-framework-mongodb-552e349eab9c)
+- [教程: API for Apache Kafka](tutorial/api-for-apache-kafka) **NEW**
 
 ### 目录结构
 
@@ -341,7 +342,8 @@ You can serve [quicktemplate](https://github.com/valyala/quicktemplate) and [her
 - [Write Gzip](http_responsewriter/write-gzip/main.go)
 - [Stream Writer](http_responsewriter/stream-writer/main.go)
 - [Transactions](http_responsewriter/transactions/main.go)
-- [SSE (third-party package usage for server-side events)](http_responsewriter/sse-third-party/main.go)
+- [SSE](http_responsewriter/sse/main.go) **NEW**
+- [SSE (third-party package usage for server sent events)](http_responsewriter/sse-third-party/main.go)
 
 > The `context/context#ResponseWriter()` returns an enchament version of a http.ResponseWriter, these examples show some places where the Context uses this object. Besides that you can use it as you did before iris.
 
