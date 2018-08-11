@@ -21,19 +21,9 @@ cd _examples && go get ./...
 go get github.com/iris-contrib/middleware/...
 go get github.com/betacraft/yaag/irisyaag
 go get github.com/markbates/goth/...
-go get github.com/getsentry/raven-go/...
-go get github.com/casbin/casbin
-go get github.com/markbates/goth/...
-go get github.com/aws/aws-sdk-go/...
-go get github.com/getsentry/raven-go/...
 go get github.com/casbin/casbin
 go get github.com/aws/aws-sdk-go/...
-go get github.com/prometheus/client_golang/...
-go get github.com/didip/tollbooth
-go get github.com/valyala/quicktemplate
-go get github.com/shiyanhui/hero
-go get github.com/go-xorm/xorm
-go get github.com/nfnt/resize
+go get github.com/getsentry/raven-go/...
 go get github.com/prometheus/client_golang/...
 go get github.com/didip/tollbooth
 go get github.com/valyala/quicktemplate
@@ -44,6 +34,7 @@ go get github.com/dgrijalva/jwt-go
 go get github.com/newrelic/go-agent
 go get github.com/valyala/tcplisten
 go get github.com/kataras/bindata/cmd/bindata
+go get github.com/jmespath/go-jmespath
 ```
 
 </details>
@@ -169,6 +160,8 @@ Navigate through examples for a better understanding.
 
 - [Basic](hero/basic/main.go)
 - [Overview](hero/overview)
+- [Sessions](hero/sessions) **NEW**
+- [Yet another dependency injection example and good practises at general](hero/smart-contract/main.go) **NEW**
 
 ### MVC
 
@@ -384,6 +377,7 @@ You can serve [quicktemplate](https://github.com/valyala/quicktemplate) and [her
 - [Read Custom via Unmarshaler](http_request/read-custom-via-unmarshaler/main.go)
 - [Upload/Read File](http_request/upload-file/main.go)
 - [Upload multiple files with an easy way](http_request/upload-files/main.go)
+- [Extract referrer from "referer" header or URL query parameter](http_request/extract-referer/main.go) **NEW**
 
 > The `context.Request()` returns the same *http.Request you already know, these examples show some places where the  Context uses this object. Besides that you can use it as you did before iris.
 

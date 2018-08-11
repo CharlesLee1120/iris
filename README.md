@@ -2,7 +2,7 @@
 
 <a href="https://iris-go.com"> <img align="right" width="169px" src="https://iris-go.com/images/icon.svg?v=a" title="logo created by @merry.dii" /> </a>
 
-[![build status](https://img.shields.io/travis/kataras/iris/master.svg?style=flat-square)](https://travis-ci.org/kataras/iris)<!-- [![release](https://img.shields.io/github/release/kataras/iris.svg?style=flat-square)](https://github.com/kataras/iris/releases)--> [![report card](https://img.shields.io/badge/report%20card-a%2B-ff3333.svg?style=flat-square)](http://goreportcard.com/report/kataras/iris) [![vscode-iris](https://img.shields.io/badge/ext%20-vscode-0c77e3.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kataras2006.iris)<!--[![github closed issues](https://img.shields.io/github/issues-closed-raw/kataras/iris.svg?style=flat-square)](https://github.com/kataras/iris/issues?q=is%3Aissue+is%3Aclosed)--> [![chat](https://img.shields.io/badge/community-%20chat-00BCD4.svg?style=flat-square)](https://kataras.rocket.chat/channel/iris) [![view examples](https://img.shields.io/badge/learn%20by-examples-0077b3.svg?style=flat-square)](https://iris-go.com/v10/recipe) [![release](https://img.shields.io/badge/release%20-v10.6-0077b3.svg?style=flat-square)](https://github.com/kataras/iris/releases)
+[![build status](https://img.shields.io/travis/kataras/iris/master.svg?style=flat-square)](https://travis-ci.org/kataras/iris)<!-- [![release](https://img.shields.io/github/release/kataras/iris.svg?style=flat-square)](https://github.com/kataras/iris/releases)--> [![report card](https://img.shields.io/badge/report%20card-a%2B-ff3333.svg?style=flat-square)](http://goreportcard.com/report/kataras/iris) [![vscode-iris](https://img.shields.io/badge/ext%20-vscode-0c77e3.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kataras2006.iris)<!--[![github closed issues](https://img.shields.io/github/issues-closed-raw/kataras/iris.svg?style=flat-square)](https://github.com/kataras/iris/issues?q=is%3Aissue+is%3Aclosed)--> [![chat](https://img.shields.io/badge/community-%20chat-00BCD4.svg?style=flat-square)](https://kataras.rocket.chat/channel/iris) [![view examples](https://img.shields.io/badge/learn%20by-examples-0077b3.svg?style=flat-square)](https://iris-go.com/v10/recipe) [![release](https://img.shields.io/badge/release%20-v10.7-0077b3.svg?style=flat-square)](https://github.com/kataras/iris/releases)
 
 Iris is a fast, simple yet fully featured and very efficient web framework for Go.
 
@@ -86,6 +86,30 @@ func main() {
 # run example.go and visit http://0.0.0.0:8080/ping on browser
 $ go run example.go
 ```
+
+## Dependency Injection
+
+The package [hero](hero) contains features for binding any object or functions that `handlers` can use, these are called dependencies.
+
+With Iris you get truly safe bindings thanks to the [hero](_examples/hero) [package](hero). It is blazing-fast, near to raw handlers performance because Iris calculates everything before even server goes online!
+
+Below you will see some screenshots I prepared for you in order to be easier to understand:
+
+### 1. Path Parameters - Built'n Dependencies
+
+![](https://github.com/kataras/explore/raw/master/iris/hero/hero-1-monokai.png)
+
+### 2. Services - Static Dependencies
+
+![](https://github.com/kataras/explore/raw/master/iris/hero/hero-2-monokai.png)
+
+### 3. Per-Request - Dynamic Dependencies
+
+![](https://github.com/kataras/explore/raw/master/iris/hero/hero-3-monokai.png)
+
+`hero funcs` are very easy to understand and when you start using them **you never go back**.
+
+> With Iris you also get real and [blazing-fast](_benchmarks) [MVC support](_examples/mvc) which uses "hero" under the hoods.
 
 ## API Examples
 
@@ -209,130 +233,56 @@ func main() {
 id: 1234; page: 1; name: manu; message: this_is_great
 ```
 
+### Extract Referer
+
+```go
+package main
+
+import (
+    "github.com/kataras/iris"
+    "github.com/kataras/iris/context"
+)
+
+func main() {
+    app := iris.New()
+
+    app.Get("/", func(ctx context.Context) /* or iris.Context, it's the same for Go 1.9+. */ {
+
+        // request header "referer" or url parameter "referer".
+        r := ctx.GetReferrer()
+        switch r.Type {
+        case context.ReferrerSearch:
+            ctx.Writef("Search %s: %s\n", r.Label, r.Query)
+            ctx.Writef("Google: %s\n", r.GoogleType)
+        case context.ReferrerSocial:
+            ctx.Writef("Social %s\n", r.Label)
+        case context.ReferrerIndirect:
+            ctx.Writef("Indirect: %s\n", r.URL)
+        }
+    })
+
+    app.Run(iris.Addr(":8080"))
+}
+```
+
+How to `curl`:
+
+```bash
+curl http://localhost:8080?referer=https://twitter.com/Xinterio/status/1023566830974251008
+curl http://localhost:8080?referer=https://www.google.com/search?q=Top+6+golang+web+frameworks&oq=Top+6+golang+web+frameworks
+```
+
 ### Upload files
 
-#### Single file
-
-Detail [example code](_examples/http_request/upload-file/main.go).
+- [single file upload](_examples/http_request/upload-file/main.go)
+- [multi file upload](_examples/http_request/upload-files)
 
 ```go
 const maxSize = 5 << 20 // 5MB
 
 func main() {
-    app.Post("/upload", func(ctx iris.Context) {
-        // Get the file from the request.
-        file, info, err := ctx.FormFile("file")
-        if err != nil {
-            ctx.StatusCode(iris.StatusInternalServerError)
-            ctx.HTML("Error while uploading: <b>" + err.Error() + "</b>")
-            return
-        }
-
-        defer file.Close()
-        fname := info.Filename
-
-        // Create a file with the same name
-        // assuming that you have a folder named 'uploads'
-        out, err := os.OpenFile("./uploads/"+fname,
-            os.O_WRONLY|os.O_CREATE, 0666)
-
-        if err != nil {
-            ctx.StatusCode(iris.StatusInternalServerError)
-            ctx.HTML("Error while uploading: <b>" + err.Error() + "</b>")
-            return
-        }
-        defer out.Close()
-
-        io.Copy(out, file)
-    })
-
-    // start the server at http://localhost:8080 with post limit at 5 MB
-    // (defaults to 32MB, read below).
-    app.Run(iris.Addr(":8080"), iris.WithPostMaxMemory(maxSize))
-}
-```
-
-```bash
-curl -X POST http://localhost:8080/upload \
-  -F "file=@./myfile.zip" \
-  -H "Content-Type: multipart/form-data"
-```
-
-* The default post max size is 32MB,
-you can extend it to read more data using the `iris.WithPostMaxMemory(maxSize)` configurator at `app.Run`,
-note that this will not be enough for your needs, read below.
-
-* The faster way to check the size is using the `ctx.GetContentLength()` which returns the whole request's size
-(plus a logical number like 2MB or even 10MB for the rest of the size like headers). You can create a
-middleware to adapt this to any necessary handler.
-
-```go
-myLimiter := func(ctx iris.Context) {
-    if ctx.GetContentLength() > maxSize { // + 2 << 20 {
-        ctx.StatusCode(iris.StatusRequestEntityTooLarge)
-        return
-    }
-    ctx.Next()
-}
-
-app.Post("/upload", myLimiter, myUploadHandler)
-```
-
-* Most clients will set the "Content-Length" header (like browsers) but it's always better to make sure that any client
-can't send data that your server can't or doesn't want to handle. This can be happen using
-the `app.Use(LimitRequestBodySize(maxSize))` (as app or route middleware)
-or the `ctx.SetMaxRequestBodySize(maxSize)` to limit the request based on a customized logic inside a particular handler, they're the same,
-read below.
-
-* You can force-limit the request body size inside a handler using the `ctx.SetMaxRequestBodySize(maxSize)`,
-this will force the connection to close if the incoming data are larger (most clients will receive it as "connection reset"),
-use that to make sure that the client will not send data that your server can't or doesn't want to accept, as a fallback.
-
-```go
-app.Post("/upload", iris.LimitRequestBodySize(maxSize), myUploadHandler)
-```
-
-OR
-
-```go
-app.Post("/upload", func(ctx iris.Context){
-    ctx.SetMaxRequestBodySize(maxSize)
-
-    // [...]
-})
-```
-
-* Another way is to receive the data and check the second return value's `Size` value of the `ctx.FormFile`, i.e `info.Size`, this will give you
-the exact file size, not the whole incoming request data length.
-
-```go
-app.Post("/upload", func(ctx iris.Context){
-    file, info, err := ctx.FormFile("file")
-    if err != nil {
-        ctx.StatusCode(iris.StatusInternalServerError)
-        ctx.HTML("Error while uploading: <b>" + err.Error() + "</b>")
-        return
-    }
-
-    defer file.Close()
-
-    if info.Size > maxSize {
-        ctx.StatusCode(iris.StatusRequestEntityTooLarge)
-        return
-    }
-
-    // [...]
-})
-```
-
-#### Multiple files (easy way)
-
-See the detail [example code](_examples/http_request/upload-files).
-
-```go
-func main() {
     app := iris.Default()
-    app.Post("/upload", func(ctx iris.Context) {
+    app.Post("/upload", iris.LimitRequestBodySize(maxSize), func(ctx iris.Context) {
         //
         // UploadFormFiles
         // uploads any number of incoming files ("multiple" property on the form input).
@@ -362,56 +312,6 @@ func beforeSave(ctx iris.Context, file *multipart.FileHeader) {
     // no need for more actions, internal uploader will use this
     // name to save the file into the "./uploads" folder.
     file.Filename = ip + "-" + file.Filename
-}
-```
-
-#### Multiple files (manual way)
-
-```go
-app.Post("/upload_manual", func(ctx iris.Context) {
-    r := ctx.Request()
-    // Get the max post value size passed via iris.WithPostMaxMemory.
-    maxSize := ctx.Application().ConfigurationReadOnly().GetPostMaxMemory()
-
-    err := r.ParseMultipartForm(maxSize)
-    if err != nil {
-        ctx.StatusCode(iris.StatusInternalServerError)
-        ctx.WriteString(err.Error())
-        return
-    }
-
-    form := r.MultipartForm
-
-    files := form.File["files[]"]
-    failures := 0
-    for _, file := range files {
-        _, err = saveUploadedFile(file, "./uploads")
-        if err != nil {
-            failures++
-            ctx.Writef("failed to upload: %s\n", file.Filename)
-        }
-    }
-    ctx.Writef("%d files uploaded", len(files)-failures)
-})
-```
-
-```go
-func saveUploadedFile(fh *multipart.FileHeader, destDirectory string) (int64, error) {
-    src, err := fh.Open()
-    if err != nil {
-        return 0, err
-    }
-    defer src.Close()
-
-    out, err := os.OpenFile(filepath.Join(destDirectory, fh.Filename),
-        os.O_WRONLY|os.O_CREATE, os.FileMode(0666))
-
-    if err != nil {
-        return 0, err
-    }
-    defer out.Close()
-
-    return io.Copy(out, src)
 }
 ```
 
@@ -575,15 +475,20 @@ func main() {
 
     // Navigate to http://localhost:8080/ping
     // and open the ./logs{TODAY}.txt file.
-    if err := app.Run(iris.Addr(":8080"), iris.WithoutBanner, iris.WithoutServerError(iris.ErrServerClosed)); err != nil {
-        app.Logger().Warn("Shutdown with error: " + err.Error())
-    }
+    app.Run(
+        iris.Addr(":8080"),
+        iris.WithoutBanner,
+        iris.WithoutVersionChecker,
+        iris.WithoutServerError(iris.ErrServerClosed),
+    )
 }
 ```
 
 ### Model binding and validation
 
 Iris uses [**go-playground/validator.v9**](https://github.com/go-playground/validator) for validation. Check the full docs on tags usage [here](http://godoc.org/gopkg.in/go-playground/validator.v9#hdr-Baked_In_Validators_and_Tags).
+
+Example [detail code](_examples/http_request/read-json-struct-validation/main.go).
 
 Note that you need to set the corresponding binding tag on all fields you want to bind. For example, when binding from JSON, set `json:"fieldname"`.
 
@@ -604,7 +509,7 @@ type User struct {
     Age            uint8      `json:"age" validate:"gte=0,lte=130"`
     Email          string     `json:"email" validate:"required,email"`
     FavouriteColor string     `json:"favColor" validate:"hexcolor|rgb|rgba"`
-    Addresses      []*Address `json:"addresses" validate:"required,dive,required"` // a person can have a home and cottage...
+    Addresses      []*Address `json:"addresses" validate:"required,dive,required"`
 }
 
 // Address houses a users address information.
@@ -633,7 +538,8 @@ func main() {
             // Handle error.
         }
 
-        // Returns InvalidValidationError for bad validation input, nil or ValidationErrors ( []FieldError )
+        // Returns InvalidValidationError for bad validation input,
+        // nil or ValidationErrors ( []FieldError )
         err := validate.Struct(user)
         if err != nil {
 
@@ -651,8 +557,8 @@ func main() {
                 fmt.Println()
                 fmt.Println(err.Namespace())
                 fmt.Println(err.Field())
-                fmt.Println(err.StructNamespace()) // Can differ when a custom TagNameFunc is registered or.
-                fmt.Println(err.StructField())     // By passing alt name to ReportError like below.
+                fmt.Println(err.StructNamespace())
+                fmt.Println(err.StructField())
                 fmt.Println(err.Tag())
                 fmt.Println(err.ActualTag())
                 fmt.Println(err.Kind())
@@ -660,79 +566,159 @@ func main() {
                 fmt.Println(err.Value())
                 fmt.Println(err.Param())
                 fmt.Println()
-
-                // Or collect these as json objects
-                // and send back to the client the collected errors via ctx.JSON
-                // {
-                // 	"namespace":        err.Namespace(),
-                // 	"field":            err.Field(),
-                // 	"struct_namespace": err.StructNamespace(),
-                // 	"struct_field":     err.StructField(),
-                // 	"tag":              err.Tag(),
-                // 	"actual_tag":       err.ActualTag(),
-                // 	"kind":             err.Kind().String(),
-                // 	"type":             err.Type().String(),
-                // 	"value":            fmt.Sprintf("%v", err.Value()),
-                // 	"param":            err.Param(),
-                // }
             }
 
-            // from here you can create your own error messages in whatever language you wish.
             return
         }
 
         // save user to database.
     })
 
-    // use Postman or whatever to do a POST request
-    // to the http://localhost:8080/user with RAW BODY:
-    /*
-        {
-            "fname": "",
-            "lname": "",
-            "age": 45,
-            "email": "mail@example.com",
-            "favColor": "#000",
-            "addresses": [{
-                "street": "Eavesdown Docks",
-                "planet": "Persphone",
-                "phone": "none",
-                "city": "Unknown"
-            }]
-        }
-    */
-    // Content-Type to application/json (optionally but good practise).
-    // This request will fail due to the empty `User.FirstName` (fname in json)
-    // and `User.LastName` (lname in json).
-    // Check your iris' application terminal output.
-    app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+    app.Run(iris.Addr(":8080"))
 }
 
-// UserStructLevelValidation contains custom struct level validations that don't always
-// make sense at the field validation level. For Example this function validates that either
-// FirstName or LastName exist; could have done that with a custom field validation but then
-// would have had to add it to both fields duplicating the logic + overhead, this way it's
-// only validated once.
-//
-// NOTE: you may ask why wouldn't I just do this outside of validator, because doing this way
-// hooks right into validator and you can combine with validation tags and still have a
-// common error output format.
 func UserStructLevelValidation(sl validator.StructLevel) {
-
     user := sl.Current().Interface().(User)
 
     if len(user.FirstName) == 0 && len(user.LastName) == 0 {
         sl.ReportError(user.FirstName, "FirstName", "fname", "fnameorlname", "")
         sl.ReportError(user.LastName, "LastName", "lname", "fnameorlname", "")
     }
-
-    // plus can to more, even with different tag than "fnameorlname".
 }
 ```
 
-## Testing
+```json
+{
+    "fname": "",
+    "lname": "",
+    "age": 45,
+    "email": "mail@example.com",
+    "favColor": "#000",
+    "addresses": [{
+        "street": "Eavesdown Docks",
+        "planet": "Persphone",
+        "phone": "none",
+        "city": "Unknown"
+    }]
+}
+```
 
-First, let's write a simple application which will make use of the HTTP Cookies.
+### Websockets
+
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/kataras/iris"
+    "github.com/kataras/iris/websocket"
+)
+
+func main() {
+    app := iris.New()
+
+    app.Get("/", func(ctx iris.Context) {
+        ctx.ServeFile("websockets.html", false) // second parameter: enable gzip?
+    })
+
+    setupWebsocket(app)
+
+    // x2
+    // http://localhost:8080
+    // http://localhost:8080
+    // write something, press submit, see the result.
+    app.Run(iris.Addr(":8080"))
+}
+
+func setupWebsocket(app *iris.Application) {
+    // create our echo websocket server
+    ws := websocket.New(websocket.Config{
+        ReadBufferSize:  1024,
+        WriteBufferSize: 1024,
+    })
+    ws.OnConnection(handleConnection)
+
+    // register the server on an endpoint.
+    // see the inline javascript code in the websockets.html,
+    // this endpoint is used to connect to the server.
+    app.Get("/echo", ws.Handler())
+    // serve the javascript built'n client-side library,
+    // see websockets.html script tags, this path is used.
+    app.Any("/iris-ws.js", websocket.ClientHandler())
+}
+
+func handleConnection(c websocket.Connection) {
+	// Read events from browser
+    c.On("chat", func(msg string) {
+        // Print the message to the console, c.Context() is the iris's http context.
+        fmt.Printf("%s sent: %s\n", c.Context().RemoteAddr(), msg)
+        // Write message back to the client message owner with:
+        // c.Emit("chat", msg)
+        // Write message to all except this client with:
+        c.To(websocket.Broadcast).Emit("chat", msg)
+    })
+}
+```
+
+**websockets.html**
+
+```html
+<!-- the message's input -->
+<input id="input" type="text" />
+
+<!-- when clicked then an iris websocket event will be sent to the server,
+at this example we registered the 'chat' -->
+<button onclick="send()">Send</button>
+
+<!-- the messages will be shown here -->
+<pre id="output"></pre>
+<!-- import the iris client-side library for browser-->
+<script src="/iris-ws.js"></script>
+
+<script>
+    var scheme = document.location.protocol == "https:" ? "wss" : "ws";
+    var port = document.location.port ? (":" + document.location.port) : "";
+    // see app.Get("/echo", ws.Handler()) on main.go
+    var wsURL = scheme + "://" + document.location.hostname + port+"/echo";
+
+    var input = document.getElementById("input");
+    var output = document.getElementById("output");
+
+    // Ws comes from the auto-served '/iris-ws.js'
+    var socket = new Ws(wsURL)
+    socket.OnConnect(function () {
+        output.innerHTML += "Status: Connected\n";
+    });
+
+    socket.OnDisconnect(function () {
+        output.innerHTML += "Status: Disconnected\n";
+    });
+
+    // read events from the server
+    socket.On("chat", function (msg) {
+        addMessage(msg);
+    });
+
+    function send() {
+        addMessage("Me: " + input.value); // write ourselves
+        socket.Emit("chat", input.value); // send chat event data to the websocket server
+        input.value = ""; // clear the input
+    }
+
+    function addMessage(msg) {
+        output.innerHTML += msg + "\n";
+    }
+</script>
+```
+
+Navigate to the [_examples/websocket](_examples/websocket) folder for more.
+
+### Cookies
+
+> Are you looking about [http sessions instead?](_examples/sessions)
+
+Let's write a simple application which will make use of the HTTP Cookies.
 
 ```sh
 $ cat _examples/cookies/basic/main.go
@@ -795,9 +781,7 @@ func main() {
 * `ctx.Request().Cookie(name)` is also available, it's the `net/http` approach
 * Learn more about path parameter's types by clicking [here](_examples/routing/dynamic-path/main.go#L31).
 
-### httptest
-
-Next, is the critical part of this section, the **HTTP Testing**.
+### Testing
 
 Iris offers an incredible support for the [httpexpect](github.com/iris-contrib/httpexpect), a Testing Framework for web applications. However, you are able to use the standard Go's `net/http/httptest` package as well but in this example we will use the `kataras/iris/httptest`.
 
@@ -906,7 +890,7 @@ Iris, unlike others, is 100% compatible with the standards and that's why the ma
 
 ## Support
 
-- [HISTORY](HISTORY.md#tu-05-june-2018--v1066) file is your best friend, it contains information about the latest features and changes
+- [HISTORY](HISTORY.md#sat-11-august-2018--v1070) file is your best friend, it contains information about the latest features and changes
 - Did you happen to find a bug? Post it at [github issues](https://github.com/kataras/iris/issues)
 - Do you have any questions or need to speak with someone experienced to solve a problem at real-time? Join us to the [community chat](https://chat.iris-go.com)
 - Complete our form-based user experience report by clicking [here](https://docs.google.com/forms/d/e/1FAIpQLSdCxZXPANg_xHWil4kVAdhmh7EBBHQZ_4_xSZVDL-oCC_z5pA/viewform?usp=sf_link)
